@@ -1,0 +1,142 @@
+---
+title: "Machine Learning Project"
+author: "Angela Guo, Sivhuo Prak, Yunyang Zhong"
+date: "4/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+#plotting and exploring
+library(tidyverse) #for plotting and summarizing
+library(GGally) #for nice scatterplot matrix 
+library(ggridges) #for joy/ridge plots
+library(corrplot) #for basic correlation matrix plot
+library(naniar) #for exploring missing values
+library(pdp) #for partial dependence plots, MARS models
+library(rpart.plot) #for plotting decision trees
+library(vip) #for importance plots
+library(pROC) #for ROC curves
+library(plotROC) #for plotting ROC curves
+
+#making things look nice
+library(lubridate) #for nice dates
+library(knitr) #for nice tables
+library(scales) #for nice labels on graphs
+library(gridExtra) #for arranging plots
+library(broom) #for nice model output
+library(janitor) #for nice names
+
+#data
+library(ISLR) #for data
+library(moderndive) #for data
+library(rattle) #weather data
+
+#modeling
+library(rsample) #for splitting data
+library(recipes) #for keeping track of transformations
+library(caret) #for modeling
+library(leaps) #for variable selection
+library(glmnet) #for LASSO
+library(earth) #for MARS models
+library(rpart) #for decision trees
+library(randomForest) #for bagging and random forests
+
+theme_set(theme_minimal())
+```
+
+## Introduction
+
+# Dataset & data cleaning
+
+This dataset was obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes or not. (All patient are females at least 21 years old of Pima Indian heritage.) An accurate description of variables is provided in the image below.
+
+![](Description.PNG)
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+db <- read_csv("diabetes.csv")
+
+db <- db %>%
+  mutate(BMI=ifelse(BMI==0, NA, BMI),
+         BloodPressure=ifelse(BloodPressure==0, NA, BloodPressure),
+         Glucose=ifelse(Glucose==0, NA, Glucose),
+         Insulin=ifelse(Insulin==0, NA, Insulin),
+         SkinThickness=ifelse(SkinThickness==0, NA, SkinThickness),
+         Outcome=ifelse(Outcome==0, 'NO', 'YES'))
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+set.seed(253)
+db_split <- initial_split(db, prop = .7)
+db_train <- training(db_split)
+db_test <- testing(db_split)
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE, fig.width=12, fig.height=12}
+db_train %>% 
+  select_if(is.numeric)%>%
+  pivot_longer(cols = everything(),
+               names_to = "variable", values_to = "value") %>% 
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(vars(variable), scales = "free")
+```
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE, fig.width=12, fig.height=6}
+db_bmi<-db_train%>%
+  ggplot(aes(x=BMI,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_preg<-db_train%>%
+  ggplot(aes(x=Pregnancies,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_glu<-db_train%>%
+  ggplot(aes(x=Glucose,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_blood<-db_train%>%
+  ggplot(aes(x=BloodPressure,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_skin<-db_train%>%
+  ggplot(aes(x=SkinThickness,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_insu<-db_train%>%
+  ggplot(aes(x=Insulin,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_dia<-db_train%>%
+  ggplot(aes(x=DiabetesPedigreeFunction,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+db_age<-db_train%>%
+  ggplot(aes(x=Age,y=Outcome))+
+  geom_point(size = .5, alpha = .5)
+
+grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin, nrow = 2) 
+```
+
+## Modeling
+
+# 4-var
+
+# all-var
+
+# Lasso
+
+# Classification tree
+
+# Random forest
+
+# Summary-train
+
+## Applying to test data
+
+# Summary-test
+
+## Conclusion

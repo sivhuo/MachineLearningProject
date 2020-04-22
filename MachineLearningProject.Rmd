@@ -125,9 +125,172 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 # 4-var
 
+First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and pregnancies.
+
+####Fit the model
+```{r}
+# Set the seed
+set.seed(253)
+
+# Run the model
+log_four_var <- train(
+    as.factor(Outcome) ~ BloodPressure+BMI+Glucose+Pregnancies,
+    data = db_train,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 5),
+    metric = "Accuracy",
+    na.action = na.omit
+)
+
+# Model output
+summary(log_four_var) %>% 
+  coef() %>% 
+  tidy() %>% 
+  select(`.rownames`, Estimate) %>% 
+  mutate(exp_coef = exp(Estimate))
+```
+
+####Cross-validated accuracy
+```{r}
+log_four_var$results$Accuracy
+```
+The cross-validated accuracy is 0.777704 for the four-variable model.
+
+####Confusion matrix
+```{r}
+confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "Yes") 
+```
+
+####ROC curve and the AUC
+```{r}
+db_train %>% 
+  mutate(PredOutcome =  predict(log_four_var, type = "prob")$"1") %>%
+  ggplot(aes(d = Outcome, m = PredOutcome)) + 
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+  
+db_train %>% 
+  mutate(PredOutcome=  predict(log_four_var, type = "prob")$"1") %>%
+  roc(Outcome, PredOutcome) %>% 
+  auc()
+```
+
+
 # all-var
+####Fit the model
+```{r}
+# Set the seed
+set.seed(253)
+
+# Run the model
+log_all_var <- train(
+    as.factor(Outcome) ~ .,
+    data = db_train,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 5),
+    metric = "Accuracy",
+    na.action = na.omit
+)
+
+# Model output
+summary(log_all_var) %>% 
+  coef() %>% 
+  tidy() %>% 
+  select(`.rownames`, Estimate) %>% 
+  mutate(exp_coef = exp(Estimate))
+```
+
+####Cross-validated accuracy
+```{r}
+log_all_var$results$Accuracy
+```
+The cross-validated accuracy is 0.792003 for the all-variable model.
+
+####Confusion matrix
+```{r}
+confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "1") 
+```
+
+####ROC curve and the AUC
+```{r}
+db_train %>% 
+  bind_cols(predict(log_all_var, type = "prob")) %>% 
+  ggplot(aes(d=ifelse(Outcome=="0",0,1), m = `1`)) +
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+
+
+#d = actual status, m = predicted probability
+db_train %>% 
+  mutate(PredOutcome=  predict(log_all_var, type = "prob")$"1") %>%
+  roc(Outcome, PredOutcome) %>% 
+  auc()
+```
 
 # Lasso
+####Fit the model
+```{r}
+set.seed(253)
+
+lambda_grid <- 10^seq(-4, -2, length = 100)
+
+log_lasso <- train(
+    as.factor(Outcome) ~ .,
+    data = db_train,
+    method = "glmnet",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 5),
+    tuneGrid = data.frame(alpha = 1, 
+                          lambda = 10^seq(-4, -2, length = 100)),
+    metric = "Accuracy",
+    na.action = na.omit
+)
+
+log_lasso$results %>% 
+  ggplot(aes(x = lambda, y = Accuracy)) +
+  geom_line() +
+  scale_x_log10()
+```
+
+####Cross-validated accuracy
+```{r}
+log_lasso$bestTune$lambda
+log_lasso$results
+```
+The cross-validated accuracy is 0.7920030 for the lasso model.
+
+####Confusion matrix
+```{r}
+confusionMatrix(data = predict(log_lasso, 
+                               type = "raw"), #predictions
+                reference = db_train$Outcome, #actuals
+                positive = "1")
+```
+
+####ROC curve and the AUC
+```{r}
+db_train %>% 
+  bind_cols(predict(log_lasso, type = "prob")) %>% 
+  ggplot(aes(d=ifelse(grant_status=="0",0,1), m = `1`)) +
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+
+#d = actual status, m = predicted probability
+
+db_train %>% 
+  mutate(PredOutcome=  predict(log_lasso, type = "prob")$"1") %>%
+  roc(Outcome, PredOutcome) %>% 
+  auc()
+```
 
 # Classification tree
 

@@ -161,20 +161,20 @@ The cross-validated accuracy is 0.777704 for the four-variable model.
 ```{r}
 confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
-                positive = "YES") 
+                positive = "1") 
 ```
 
 ####ROC curve and the AUC
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(log_four_var, type = "prob")$"YES") %>%
+  mutate(PredOutcome =  predict(log_four_var, type = "prob")$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
   
 db_train %>% 
-  mutate(PredOutcome=  predict(log_four_var, type = "prob")$"YES") %>%
+  mutate(PredOutcome=  predict(log_four_var, type = "prob")$"1") %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
@@ -213,20 +213,20 @@ The cross-validated accuracy is 0.792003 for the all-variable model.
 ```{r}
 confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
-                positive = "YES") 
+                positive = "1") 
 ```
 
 ####ROC curve and the AUC
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(log_all_var, type = "prob")$"YES") %>%
+  mutate(PredOutcome =  predict(log_all_var, type = "prob")$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
 #d = actual status, m = predicted probability
 db_train %>% 
-  mutate(PredOutcome=  predict(log_all_var, type = "prob")$"YES") %>%
+  mutate(PredOutcome=  predict(log_all_var, type = "prob")$"1") %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
@@ -264,21 +264,21 @@ The cross-validated accuracy is 0.7920030 for the lasso model.
 ```{r}
 confusionMatrix(data = predict(log_lasso, 
                                type = "raw"), #predictions
-                reference = db_train$Outcome, #actuals
-                positive = "YES")
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "1")
 ```
 
 ####ROC curve and the AUC
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(log_lasso, type = "prob")$"YES") %>%
+  mutate(PredOutcome =  predict(log_lasso, type = "prob")$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
 #d = actual status, m = predicted probability
 db_train %>% 
-  mutate(PredOutcome=  predict(log_lasso, type = "prob")$"YES") %>%
+  mutate(PredOutcome=  predict(log_lasso, type = "prob")$"1") %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
@@ -396,7 +396,7 @@ db_train %>%
 ```
 
 ```{r}
-vip(db_randf_model$finalModel, num_features = 30, bar = FALSE) 
+vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 
 ```
 
 # Summary-train
@@ -406,14 +406,14 @@ vip(db_randf_model$finalModel, num_features = 30, bar = FALSE)
 # 4-var
 
 ```{r}
-confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+confusionMatrix(data = predict(log_four_var, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
 ```{r}
 db_test%>%
-  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  mutate(pred = predict(log_four_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
   auc()
 ```
@@ -421,14 +421,14 @@ db_test%>%
 # all-var
 
 ```{r}
-confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+confusionMatrix(data = predict(log_all_var, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
 ```{r}
 db_test%>%
-  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  mutate(pred = predict(log_all_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
   auc()
 ```
@@ -436,14 +436,14 @@ db_test%>%
 # Lasso
 
 ```{r}
-confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+confusionMatrix(data = predict(log_lasso, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
 ```{r}
 db_test%>%
-  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  mutate(pred = predict(log_lasso,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
   auc()
 ```

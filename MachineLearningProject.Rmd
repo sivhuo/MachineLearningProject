@@ -125,6 +125,60 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 # 4-var
 
+First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and pregnancies.
+
+####Fit the model
+```{r}
+# Set the seed
+set.seed(253)
+
+# Run the model
+log_four_var <- train(
+    as.factor(Outcome) ~ BloodPressure+BMI+Glucose+Pregnancies,
+    data = db_train,
+    method = "glm",
+    family = "binomial",
+    trControl = trainControl(method = "cv", number = 5),
+    metric = "Accuracy",
+    na.action = na.omit
+)
+
+# Model output
+summary(log_four_var) %>% 
+  coef() %>% 
+  tidy() %>% 
+  select(`.rownames`, Estimate) %>% 
+  mutate(exp_coef = exp(Estimate))
+```
+
+####Cross-validated accuracy
+```{r}
+log_four_var$results$Accuracy
+```
+
+####Confusion matrix
+```{r}
+confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "Yes") 
+```
+
+####ROC curve and the AUC
+```{r}
+db_train %>% 
+  mutate(PredOutcome =  predict(log_four_var, type = "prob")$"1") %>%
+  ggplot(aes(d = Outcome, m = PredOutcome)) + 
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+  
+db_train %>% 
+  mutate(PredOutcome=  predict(log_four_var, type = "prob")$"1") %>%
+  roc(Outcome, PredOutcome) %>% 
+  auc()
+```
+
+
 # all-var
 
 # Lasso

@@ -131,7 +131,118 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 # Classification tree
 
+```{r}
+set.seed(327)
+
+db_tree_model <- train(
+  Outcome ~ ., 
+  data = db_train,
+  method = "rpart",
+  tuneGrid = data.frame(cp = 10^seq(-5, 1 , 
+                                    length = 50)),
+  trControl = trainControl(method = "cv", number = 5),
+  metric = "Accuracy",
+  na.action = na.omit
+)
+```
+
+
+```{r}
+#cv accuracy metrics
+db_tree_model$results
+
+#Examine the results in a plot
+db_tree_model$results %>% 
+  ggplot(aes(x = cp, y = Accuracy)) + 
+  geom_point() + 
+  geom_line() + 
+  scale_x_log10()
+```
+
+```{r}
+db_tree_model$bestTune
+```
+
+```{r}
+confusionMatrix(data = predict(db_tree_model, type = "raw"), #predictions
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "YES") 
+```
+
+```{r}
+db_train %>% 
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"YES") %>%
+  ggplot(aes(d = as.factor(Outcome), m = PredOutcome)) + 
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+```    
+    
+```{r}
+#roc(actual_class ~ predicted_probability)
+db_train %>% 
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"YES") %>%
+  roc(Outcome ~ PredOutcome, data=.) %>% 
+  auc()
+```
+
 # Random forest
+
+```{r}
+set.seed(327)
+db_randf_model <- train(
+  Outcome ~ .,
+  data = db_train, 
+  method = "rf",
+  trControl = trainControl(method = "cv", ),
+  tuneGrid = data.frame(mtry = c(1, 2, 3, 4, 5, 6, 7, 8)),
+  ntree = 200, #number of trees used, default is 500
+  importance = TRUE, #for importance plots later
+  nodesize = 5, #this is the default terminal node size for regression trees. Could set larger for smaller trees.
+  metric = "Accuracy",
+  na.action = na.omit
+)
+```
+
+```{r}
+#Examine the results in a plot
+db_randf_model$results %>% 
+  ggplot(aes(x = mtry, y = Accuracy)) + 
+  geom_point() + 
+  geom_line() 
+```
+
+```{r}
+db_randf_model$results
+db_randf_model$bestTune
+```
+
+```{r}
+confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
+                reference = as.factor(db_train$Outcome), #actuals
+                positive = "YES") 
+``` 
+
+```{r}
+db_train %>% 
+  mutate(PredOutcome =  predict(db_randf_model, tyep = "prob")$"YES") %>%
+  ggplot(aes(d = as.factor(db_train$Outcome), m = PredOutcome)) + 
+  geom_roc(labelround = 2, size = 1,
+           linealpha = .5, pointalpha = .8) +
+  geom_abline(slope = 1, intercept = 0, color = "gray")
+```    
+
+```{r}
+db_train %>% 
+  mutate(PredOutcome =  predict(db_randf_model, type = "prob")$"YES") %>%
+  roc(Outcome ~ PredOutcome, data=.) %>% 
+  auc()
+```
+
+```{r}
+vip(db_randf_model$finalModel, num_features = 30, bar = FALSE) 
+```
+
 
 # Summary-train
 

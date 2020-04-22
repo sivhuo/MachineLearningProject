@@ -58,7 +58,9 @@ This dataset was obtained from Kaggle.com. The goal is to predict whether or not
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 db <- read_csv("diabetes.csv")
+```
 
+```
 db <- db %>%
   mutate(BMI=ifelse(BMI==0, NA, BMI),
          BloodPressure=ifelse(BloodPressure==0, NA, BloodPressure),
@@ -135,7 +137,7 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 set.seed(327)
 
 db_tree_model <- train(
-  Outcome ~ ., 
+  as.factor(Outcome) ~ ., 
   data = db_train,
   method = "rpart",
   tuneGrid = data.frame(cp = 10^seq(-5, 1 , 
@@ -166,13 +168,13 @@ db_tree_model$bestTune
 ```{r}
 confusionMatrix(data = predict(db_tree_model, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
-                positive = "YES") 
+                positive = "1") 
 ```
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"YES") %>%
-  ggplot(aes(d = as.factor(Outcome), m = PredOutcome)) + 
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"1") %>%
+  ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
@@ -181,7 +183,7 @@ db_train %>%
 ```{r}
 #roc(actual_class ~ predicted_probability)
 db_train %>% 
-  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"YES") %>%
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"1") %>%
   roc(Outcome ~ PredOutcome, data=.) %>% 
   auc()
 ```
@@ -191,10 +193,13 @@ db_train %>%
 ```{r}
 set.seed(327)
 db_randf_model <- train(
-  Outcome ~ .,
+  as.factor(Outcome) ~ .,
   data = db_train, 
   method = "rf",
-  trControl = trainControl(method = "cv", ),
+  #trControl = trainControl(method = "cv",
+  #                         number = 5),
+  #tuneGrid = data.frame(mtry = 2),
+  trControl = trainControl(method = "oob"),
   tuneGrid = data.frame(mtry = c(1, 2, 3, 4, 5, 6, 7, 8)),
   ntree = 200, #number of trees used, default is 500
   importance = TRUE, #for importance plots later
@@ -220,13 +225,13 @@ db_randf_model$bestTune
 ```{r}
 confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
-                positive = "YES") 
+                positive = "1") 
 ``` 
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(db_randf_model, tyep = "prob")$"YES") %>%
-  ggplot(aes(d = as.factor(db_train$Outcome), m = PredOutcome)) + 
+  mutate(PredOutcome =  predict(db_randf_model, type = "prob")$"1") %>%
+  ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
@@ -234,7 +239,7 @@ db_train %>%
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(db_randf_model, type = "prob")$"YES") %>%
+  mutate(PredOutcome =  predict(db_randf_model, type = "prob")$"1") %>%
   roc(Outcome ~ PredOutcome, data=.) %>% 
   auc()
 ```

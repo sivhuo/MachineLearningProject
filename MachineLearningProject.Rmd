@@ -148,7 +148,6 @@ db_tree_model <- train(
 )
 ```
 
-
 ```{r}
 #cv accuracy metrics
 db_tree_model$results
@@ -248,10 +247,84 @@ db_train %>%
 vip(db_randf_model$finalModel, num_features = 30, bar = FALSE) 
 ```
 
-
 # Summary-train
 
 ## Applying to test data
+
+# 4-var
+
+```{r}
+confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+                reference = as.factor(db_test$Outcome),
+                positive = "1") 
+```
+
+```{r}
+db_test%>%
+  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
+  auc()
+```
+
+# all-var
+
+```{r}
+confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+                reference = as.factor(db_test$Outcome),
+                positive = "1") 
+```
+
+```{r}
+db_test%>%
+  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
+  auc()
+```
+
+# Lasso
+
+```{r}
+confusionMatrix(data = predict(???, newdata = db_test, type = "raw"),
+                reference = as.factor(db_test$Outcome),
+                positive = "1") 
+```
+
+```{r}
+db_test%>%
+  mutate(pred = predict(???,newdata=db_test,type="prob")$"1")%>%
+  roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
+  auc()
+```
+
+# Classification tree
+
+```{r}
+confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
+                reference = as.factor(db_test$Outcome),
+                positive = "1") 
+```
+
+```{r}
+db_test%>%
+  mutate(pred = predict(db_tree_model,newdata=db_test,type="prob")$"1")%>%
+  roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
+  auc()
+```
+
+# Random forest
+
+```{r}
+confusionMatrix(data = predict(db_randf_model, newdata = db_test, type = "raw"),
+                reference = as.factor(db_test$Outcome),
+                positive = "1") 
+```
+
+```{r}
+db_test%>%
+  mutate(pred = predict(db_randf_model,newdata=db_test,type="prob")$"1")%>%
+  roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
+  auc()
+```
 
 # Summary-test
 

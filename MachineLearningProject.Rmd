@@ -125,11 +125,12 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 ## Modeling
 
-# 4-var
+### 4-var
 
 First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and pregnancies.
 
-####Fit the model
+### #Fit the model
+
 ```{r}
 # Set the seed
 set.seed(253)
@@ -143,6 +144,7 @@ log_four_var <- train(
     metric = "Accuracy",
     na.action = na.omit
 )
+
 # Model output
 summary(log_four_var) %>% 
   coef() %>% 
@@ -151,20 +153,24 @@ summary(log_four_var) %>%
   mutate(exp_coef = exp(Estimate))
 ```
 
-####Cross-validated accuracy
+#### Cross-validated accuracy
+
 ```{r}
 log_four_var$results$Accuracy
 ```
+
 The cross-validated accuracy is 0.777704 for the four-variable model.
 
-####Confusion matrix
+#### Confusion matrix
+
 ```{r}
 confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
 
-####ROC curve and the AUC
+#### ROC curve and the AUC
+
 ```{r}
 db_train %>% 
   mutate(PredOutcome =  predict(log_four_var, type = "prob")$"1") %>%
@@ -179,9 +185,10 @@ db_train %>%
   auc()
 ```
 
+### all-var
 
-# all-var
-####Fit the model
+#### Fit the model
+
 ```{r}
 # Set the seed
 set.seed(253)
@@ -203,20 +210,24 @@ summary(log_all_var) %>%
   mutate(exp_coef = exp(Estimate))
 ```
 
-####Cross-validated accuracy
+#### Cross-validated accuracy
+
 ```{r}
 log_all_var$results$Accuracy
 ```
+
 The cross-validated accuracy is 0.792003 for the all-variable model.
 
-####Confusion matrix
+#### Confusion matrix
+
 ```{r}
 confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
 
-####ROC curve and the AUC
+#### ROC curve and the AUC
+
 ```{r}
 db_train %>% 
   mutate(PredOutcome =  predict(log_all_var, type = "prob")$"1") %>%
@@ -231,8 +242,10 @@ db_train %>%
   auc()
 ```
 
-# Lasso
-####Fit the model
+### Lasso
+
+#### Fit the model
+
 ```{r}
 set.seed(253)
 lambda_grid <- 10^seq(-4, -2, length = 100)
@@ -247,20 +260,24 @@ log_lasso <- train(
     metric = "Accuracy",
     na.action = na.omit
 )
+
 log_lasso$results %>% 
   ggplot(aes(x = lambda, y = Accuracy)) +
   geom_line() +
   scale_x_log10()
 ```
 
-####Cross-validated accuracy
+#### Cross-validated accuracy
+
 ```{r}
 log_lasso$bestTune$lambda
 log_lasso$results
 ```
+
 The cross-validated accuracy is 0.7920030 for the lasso model.
 
-####Confusion matrix
+#### Confusion matrix
+
 ```{r}
 confusionMatrix(data = predict(log_lasso, 
                                type = "raw"), #predictions
@@ -268,7 +285,8 @@ confusionMatrix(data = predict(log_lasso,
                 positive = "1")
 ```
 
-####ROC curve and the AUC
+#### ROC curve and the AUC
+
 ```{r}
 db_train %>% 
   mutate(PredOutcome =  predict(log_lasso, type = "prob")$"1") %>%
@@ -403,7 +421,7 @@ vip(db_randf_model$finalModel, num_features = 8, bar = FALSE)
 
 ## Applying to test data
 
-# 4-var
+### 4-var
 
 ```{r}
 confusionMatrix(data = predict(log_four_var, newdata = db_test, type = "raw"),
@@ -418,7 +436,7 @@ db_test%>%
   auc()
 ```
 
-# all-var
+### all-var
 
 ```{r}
 confusionMatrix(data = predict(log_all_var, newdata = db_test, type = "raw"),
@@ -433,7 +451,7 @@ db_test%>%
   auc()
 ```
 
-# Lasso
+### Lasso
 
 ```{r}
 confusionMatrix(data = predict(log_lasso, newdata = db_test, type = "raw"),
@@ -448,7 +466,7 @@ db_test%>%
   auc()
 ```
 
-# Classification tree
+### Classification tree
 
 ```{r}
 confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
@@ -463,7 +481,7 @@ db_test%>%
   auc()
 ```
 
-# Random forest
+### Random forest
 
 ```{r}
 confusionMatrix(data = predict(db_randf_model, newdata = db_test, type = "raw"),

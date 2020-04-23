@@ -129,7 +129,7 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and pregnancies.
 
-### #Fit the model
+#### Fit the model
 
 ```{r}
 # Set the seed
@@ -303,6 +303,8 @@ db_train %>%
 
 # Classification tree
 
+#### Fit the model
+
 ```{r}
 set.seed(327)
 
@@ -318,11 +320,9 @@ db_tree_model <- train(
 )
 ```
 
-```{r}
-#cv accuracy metrics
-db_tree_model$results
+#### cp vs. Accuracy 
 
-#Examine the results in a plot
+```{r}
 db_tree_model$results %>% 
   ggplot(aes(x = cp, y = Accuracy)) + 
   geom_point() + 
@@ -330,15 +330,22 @@ db_tree_model$results %>%
   scale_x_log10()
 ```
 
+#### Cross-validated accuracy
+
 ```{r}
 db_tree_model$bestTune
+db_tree_model$results
 ```
+
+#### Confusion matrix
 
 ```{r}
 confusionMatrix(data = predict(db_tree_model, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
+
+#### ROC curve and the AUC
 
 ```{r}
 db_train %>% 
@@ -359,6 +366,8 @@ db_train %>%
 
 # Random forest
 
+#### Fit the model
+
 ```{r}
 set.seed(327)
 db_randf_model <- train(
@@ -378,6 +387,8 @@ db_randf_model <- train(
 )
 ```
 
+#### mtry vs. Accuracy  
+
 ```{r}
 #Examine the results in a plot
 db_randf_model$results %>% 
@@ -386,16 +397,22 @@ db_randf_model$results %>%
   geom_line() 
 ```
 
+#### OOB accuracy
+
 ```{r}
 db_randf_model$results
 db_randf_model$bestTune
 ```
+
+#### Confusion matrix
 
 ```{r}
 confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ``` 
+
+#### ROC curve and the AUC
 
 ```{r}
 db_train %>% 
@@ -412,6 +429,8 @@ db_train %>%
   roc(Outcome ~ PredOutcome, data=.) %>% 
   auc()
 ```
+
+#### Variable importance plot
 
 ```{r}
 vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 

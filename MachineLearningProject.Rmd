@@ -5,11 +5,11 @@ date: "4/18/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r, warning = FALSE, message = FALSE, echo = FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 #plotting and exploring
 library(tidyverse) #for plotting and summarizing
 library(GGally) #for nice scatterplot matrix 
@@ -56,28 +56,36 @@ This dataset was obtained from Kaggle.com. The goal is to predict whether or not
 
 ![](Description.PNG)
 
-```{r, warning = FALSE, message = FALSE, echo = FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db <- read_csv("diabetes.csv")
 ```
 
-```
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db <- db %>%
   mutate(BMI=ifelse(BMI==0, NA, BMI),
          BloodPressure=ifelse(BloodPressure==0, NA, BloodPressure),
          Glucose=ifelse(Glucose==0, NA, Glucose),
          Insulin=ifelse(Insulin==0, NA, Insulin),
-         SkinThickness=ifelse(SkinThickness==0, NA, SkinThickness),
-         Outcome=ifelse(Outcome==0, 'NO', 'YES'))
+         SkinThickness=ifelse(SkinThickness==0, NA, SkinThickness))
 ```
 
-```{r, warning = FALSE, message = FALSE, echo = FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+db <- db %>%
+  mutate(BMI=ifelse(is.na(BMI), median(db$BMI,na.rm = TRUE), BMI),
+         BloodPressure=ifelse(is.na(BloodPressure), median(db$BloodPressure,na.rm = TRUE), BloodPressure),
+         Glucose=ifelse(is.na(Glucose), median(db$Glucose,na.rm = TRUE), Glucose),
+         Insulin=ifelse(is.na(Insulin), median(db$Insulin,na.rm = TRUE), Insulin),
+         SkinThickness=ifelse(is.na(SkinThickness), median(db$SkinThickness,na.rm = TRUE), SkinThickness))
+```
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 set.seed(253)
 db_split <- initial_split(db, prop = .7)
 db_train <- training(db_split)
 db_test <- testing(db_split)
 ```
 
-```{r, warning = FALSE, message = FALSE, echo = FALSE, fig.width=12, fig.height=12}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=12}
 db_train %>% 
   select_if(is.numeric)%>%
   pivot_longer(cols = everything(),
@@ -87,7 +95,7 @@ db_train %>%
   facet_wrap(vars(variable), scales = "free")
 ```
 
-```{r, warning = FALSE, message = FALSE, echo = FALSE, fig.width=12, fig.height=6}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=6}
 db_bmi<-db_train%>%
   ggplot(aes(x=BMI,y=Outcome))+
   geom_point(size = .5, alpha = .5)

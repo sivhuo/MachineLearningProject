@@ -50,17 +50,19 @@ theme_set(theme_minimal())
 
 ## Introduction
 
-# Dataset & data cleaning
-
-This dataset was obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes or not. (All patient are females at least 21 years old of Pima Indian heritage.) An accurate description of variables is provided in the image below.
+Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes or not based on diagnostic measurements such as their blood pressure, BMI, and age. All patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
 
 ![](Description.PNG)
+
+# Data cleaning
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db <- read_csv("diabetes.csv")
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+We notice that there might be some missing values because it does not make sense to have blood pressure of 0 or BMI or 0. Therefore, we use the mutate function and the median function to change these 0 values into the median value of the predictor variable. The median values are calculated after changing all 0 values to missing. Variables requiring modifications include BMI, BloodPressure, Glucose, Insulin, and SkinThickness, all of which containe values of 0 but should always be higher than 0.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db <- db %>%
   mutate(BMI=ifelse(BMI==0, NA, BMI),
          BloodPressure=ifelse(BloodPressure==0, NA, BloodPressure),
@@ -69,7 +71,7 @@ db <- db %>%
          SkinThickness=ifelse(SkinThickness==0, NA, SkinThickness))
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db <- db %>%
   mutate(BMI=ifelse(is.na(BMI), median(db$BMI,na.rm = TRUE), BMI),
          BloodPressure=ifelse(is.na(BloodPressure), median(db$BloodPressure,na.rm = TRUE), BloodPressure),
@@ -78,12 +80,16 @@ db <- db %>%
          SkinThickness=ifelse(is.na(SkinThickness), median(db$SkinThickness,na.rm = TRUE), SkinThickness))
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+We use 70% of the dataset as our training data while 30% as our testing data. The proportion 0.7 is used instead of 0.5 because this dataset, with 768 observations, is not a large dataset and thus a larger proportion is needed to fit an accurate model.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 set.seed(253)
 db_split <- initial_split(db, prop = .7)
 db_train <- training(db_split)
 db_test <- testing(db_split)
 ```
+
+The following are graphs that summarize all the 9 variables. We can see that all the predictor variables are numerical while the outcome variable is categorical, with 0 meaning that the patient does not have diabetes and 1 meaning that the patient has diabetes. Four of the predictor variables, BloodPressure, BMI, Glucose, Insulin, and SkinThickness, are approximately normally distributed. They are also the ones that have values of 0 and are modified to the median values. The other three variables, Age, DiabetesPedigreeFunction, and Pregnancies, are right-skewed, showing the most patients in the dataset are young, have few pregnancies, and are not likely to have diabetes based on their family history.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=12}
 db_train %>% 
@@ -94,6 +100,8 @@ db_train %>%
   geom_histogram() +
   facet_wrap(vars(variable), scales = "free")
 ```
+
+We plot the relationship between the outcome variable and all predictor variables as well. For most variables, it is hard to tell how they affect the outcome. BMI, DiabetesPedigreeFunction, and Glucose are the three that have slightly more observable influence on the outcome. From the graph, our primary conjecture is that higher BMI, DiabetesPedigreeFunction, and Glucose are associated with having diabetes.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=6}
 db_bmi<-db_train%>%
@@ -135,7 +143,7 @@ grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin,
 
 ### 4-var
 
-First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and pregnancies.
+First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and DiabetesPedigreeFunction.
 
 #### Fit the model
 
@@ -144,7 +152,7 @@ First of all, we choose four variable out of all the available variables, and us
 set.seed(253)
 # Run the model
 log_four_var <- train(
-    as.factor(Outcome) ~ BloodPressure+BMI+Glucose+Pregnancies,
+    as.factor(Outcome) ~ BloodPressure+BMI+Glucose+DiabetesPedigreeFunction,
     data = db_train,
     method = "glm",
     family = "binomial",
@@ -448,15 +456,19 @@ vip(db_randf_model$finalModel, num_features = 8, bar = FALSE)
 
 ## Applying to test data
 
+After we fit all five models using the training data, we are going to examine the effect of each model on the test data. We primarily focus on the accuracy and the AUC value, and use statistics from the confusion matrix (including sensitivity and specificity) as references.
+
 ### 4-var
 
-```{r}
+We get an accuracy of 0.7348 and an AUC of 0.8076 for this model.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_four_var, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db_test%>%
   mutate(pred = predict(log_four_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -465,13 +477,15 @@ db_test%>%
 
 ### all-var
 
-```{r}
+We get an accuracy of 0.7522 and an AUC of 0.8242 for this model. Both values are higher than those of the 4-var model, indicating that this model is a more accurate and better one.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_all_var, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db_test%>%
   mutate(pred = predict(log_all_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -480,13 +494,15 @@ db_test%>%
 
 ### Lasso
 
-```{r}
+We get an accuracy of 0.7478 and an AUC of 0.8217 for this model. Both values are higher than those of the 4-var model but lower than the all-var model, indicating that this model performs better than the 4-var model but not as good as the all-var model.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_lasso, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db_test%>%
   mutate(pred = predict(log_lasso,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -495,13 +511,15 @@ db_test%>%
 
 ### Classification tree
 
-```{r}
+We get an accuracy of 0.7043 and an AUC of 0.7363 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db_test%>%
   mutate(pred = predict(db_tree_model,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -510,13 +528,15 @@ db_test%>%
 
 ### Random forest
 
-```{r}
+We get an accuracy of 0.7304 and an AUC of 0.8190 for this model. It has the second smallest accuracy and the third smallest AUC.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(db_randf_model, newdata = db_test, type = "raw"),
                 reference = as.factor(db_test$Outcome),
                 positive = "1") 
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 db_test%>%
   mutate(pred = predict(db_randf_model,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -524,5 +544,9 @@ db_test%>%
 ```
 
 # Summary-test
+
+![](Summary-test.PNG)
+
+According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one.
 
 ## Conclusion

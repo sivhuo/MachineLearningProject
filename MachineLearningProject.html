@@ -714,7 +714,7 @@ db_train %&gt;%
 <h1>Classification tree</h1>
 <div id="fit-the-model-3" class="section level4">
 <h4>Fit the model</h4>
-<p>We also try fitting the model using classification tree method as shown below. Since this is a classification model, the “Accuracy” metric is used to select the optimal model. We use cross-validation method to compute the accuracy. The tuning parameter cp is set to vary from <span class="math inline">\(10^{-5}\)</span> to <span class="math inline">\(10^1\)</span> so that we can find a maximum accuracy.</p>
+<p>We also try fitting the model using classification tree method as shown below. Since this is a classification model, the “Accuracy” metric is used to select the optimal model. We use cross-validation method to compute the accuracy. The tuning parameter cp is set to vary from <span class="math inline">\(10^{-5}\)</span> to <span class="math inline">\(10^1\)</span> so that we can find the maximum accuracy.</p>
 <pre class="r"><code>set.seed(327)
 
 db_tree_model &lt;- train(
@@ -794,7 +794,7 @@ db_tree_model &lt;- train(
   roc(Outcome ~ PredOutcome, data=.) %&gt;% 
   auc()</code></pre>
 <pre><code>## Area under the curve: 0.8601</code></pre>
-<p>We als use ROC and AUC method to evaluate our model. We want our classifier to perform better than chance where the AUC is 0.5. From the graph above, we can see that it is doing a pretty good job since the ROC curve is above the linear line and the area under it is 0.8601 greater than 0.5.</p>
+<p>We also use ROC and AUC method to evaluate our model. We want our classifier to perform better than chance where the AUC is 0.5. From the graph above, we can see that it is doing a pretty good job since the ROC curve is above the linear line and the area under it is 0.8601 which is greater than 0.5.</p>
 </div>
 <div id="plot-of-tree-model" class="section level4">
 <h4>Plot of tree model</h4>

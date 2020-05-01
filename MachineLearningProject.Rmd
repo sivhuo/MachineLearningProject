@@ -169,14 +169,13 @@ summary(log_four_var) %>%
   mutate(exp_coef = exp(Estimate))
 ```
 
-
 #### Cross-validated accuracy
 
 ```{r}
 log_four_var$results$Accuracy
 ```
 
-The cross-validated accuracy is 0.777704 for the four-variable model.
+The cross-validated accuracy is 0.7844 for the four-variable model.
 
 #### Confusion matrix
 
@@ -185,6 +184,7 @@ confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
+
 We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7881.
 
 #### ROC curve and the AUC
@@ -202,7 +202,8 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
-Then, we plotted the ROC curve and computed the AUC for this model, which is 0.832.
+
+Then, we plotted the ROC curve and computed the AUC for this model, which is 0.8320.
 
 ### all-var
 
@@ -228,6 +229,7 @@ summary(log_all_var) %>%
   select(`.rownames`, Estimate) %>% 
   mutate(exp_coef = exp(Estimate))
 ```
+
 Now, instad of looking at only four variables, we want to include all the variables we have and build a model based on them.
 
 #### Cross-validated accuracy
@@ -236,7 +238,7 @@ Now, instad of looking at only four variables, we want to include all the variab
 log_all_var$results$Accuracy
 ```
 
-The cross-validated accuracy is 0.792003 for the all-variable model.
+The cross-validated accuracy is 0.7657 for the all-variable model.
 
 #### Confusion matrix
 
@@ -245,7 +247,9 @@ confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
+
 Similarly, we created a confusion matrix to see the model performance. From the matrix, we can see that the model has an accuracy of 0.7788.
+
 #### ROC curve and the AUC
 
 ```{r}
@@ -261,7 +265,9 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
+
 Now, we draw a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8479.
+
 ### Lasso
 
 #### Fit the model
@@ -286,6 +292,7 @@ log_lasso$results %>%
   geom_line() +
   scale_x_log10()
 ```
+
 Other than a four-var model and an all-var model, we want to fit another model using the Lasso method.
 
 #### Cross-validated accuracy
@@ -295,7 +302,7 @@ log_lasso$bestTune$lambda
 log_lasso$results
 ```
 
-The cross-validated accuracy is 0.7920030 for the lasso model.
+The cross-validated accuracy is 0.7657 for the lasso model.
 
 #### Confusion matrix
 
@@ -305,7 +312,9 @@ confusionMatrix(data = predict(log_lasso,
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1")
 ```
+
 As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7788.
+
 #### ROC curve and the AUC
 
 ```{r}
@@ -321,7 +330,9 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
+
 After drawing the ROC curve and computed the AUC, we found an AUC of 0.8469 for our Lasso model. 
+
 # Classification tree
 
 #### Fit the model
@@ -365,7 +376,7 @@ db_tree_model$results
 db_tree_model$bestTune
 ```
 
-The best tuning paramter is 0.01526418 and the highest accuracy is 0.7492039. 
+The best tuning paramter is 0.01526418 and the highest accuracy is 0.7492. 
 
 #### Confusion matrix
 
@@ -377,7 +388,7 @@ confusionMatrix(data = predict(db_tree_model, type = "raw"), #predictions
 
 The confusion matrix above shows us that the the sensitivity of this model is 0.7174 and the specificity of it is  0.8870. Since the specificity is higher than the sensitivity, this model has a higher true negative rate than true positive rate. This means that it can predict better when the patients don't have diabetes than when the patients have diabetes. 
 
-The accuracy using the entire training dataset is 0.829 which is significantly greater than the cross-validated accuracy 0.7492039. This could be because the model is overfitted since we use the entire traning data set. 
+The accuracy using the entire training dataset is 0.8290 which is significantly greater than the cross-validated accuracy 0.7492. This could be because the model is overfitted since we use the entire traning data set. 
 
 #### ROC curve and the AUC
 
@@ -443,7 +454,7 @@ db_randf_model$results %>%
 
 #### OOB accuracy
 
-The results table shows the accuracy for each mtry. The highest accuracy is 0.7881041 and the best mtry is 2 (best tune). This oob accuracy is greater than the accuracy from the classification tree model. 
+The results table shows the accuracy for each mtry. The highest accuracy is 0.7881 and the best mtry is 2 (best tune). This oob accuracy is greater than the accuracy from the classification tree model. 
 
 ```{r}
 db_randf_model$results
@@ -458,7 +469,7 @@ confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
                 positive = "1") 
 ``` 
 
-According to the confusion matrix and statistic above, we can see that the sensitivity of this model is 0.6087 and the speficity is 0.8616. Similarly to the classification model tree, the specificity rate is higher than the sensitivity rate, thus this model predicts better when the patients don't have diabetes than when they have diabetes. We also notice that the accuracy using the entire data set is 0.7751 which is lower than the oob accuracy 0.7881041. 
+According to the confusion matrix and statistic above, we can see that the sensitivity of this model is 0.6087 and the speficity is 0.8616. Similarly to the classification model tree, the specificity rate is higher than the sensitivity rate, thus this model predicts better when the patients don't have diabetes than when they have diabetes. We also notice that the accuracy using the entire data set is 0.7751 which is lower than the oob accuracy 0.7881. 
 
 #### ROC curve and the AUC
 
@@ -491,11 +502,13 @@ vip(db_randf_model$finalModel, num_features = 8, bar = FALSE)
 We also plot the variable importance plot. It is clear that glucose is the most important predictor. Age, BMI and insulin are also the important predictors after glucose. 
 
 # Summary-train
-               |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest       
----------------|-------------|-------------|-------------|-------------|-------------| 
-Accuracy       |0.784        |0.792        |0.792        |0.7492       |0.7881         
-AUC            |0.832        |0.848        |0.847        |0.8601       |0.8266        
 
+               |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest
+    -----------|-------------|-------------|-------------|-------------|-------------
+    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7492[1]    |0.7881[5] 
+    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8601[5]    |0.8266[1]  
+
+Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var is the best choice as it has the second highest AUC and a median accuracy.
 
 ## Applying to test data
 
@@ -593,3 +606,5 @@ db_test%>%
 According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one.
 
 ## Conclusion
+
+Both the training summary table and the testing one give to the same choice- the all-var model. As a result, our conclusion is that we should include all variables in the model when examing whether a patient has diabetes or not.

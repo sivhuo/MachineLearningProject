@@ -147,7 +147,7 @@ First of all, we choose four variable out of all the available variables, and us
 
 #### Fit the model
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 # Set the seed
 set.seed(253)
 # Run the model
@@ -169,6 +169,7 @@ summary(log_four_var) %>%
   mutate(exp_coef = exp(Estimate))
 ```
 
+
 #### Cross-validated accuracy
 
 ```{r}
@@ -179,11 +180,12 @@ The cross-validated accuracy is 0.777704 for the four-variable model.
 
 #### Confusion matrix
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
+We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7881.
 
 #### ROC curve and the AUC
 
@@ -200,12 +202,13 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
+Then, we plotted the ROC curve and computed the AUC for this model, which is 0.832.
 
 ### all-var
 
 #### Fit the model
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 # Set the seed
 set.seed(253)
 # Run the model
@@ -225,6 +228,7 @@ summary(log_all_var) %>%
   select(`.rownames`, Estimate) %>% 
   mutate(exp_coef = exp(Estimate))
 ```
+Now, instad of looking at only four variables, we want to include all the variables we have and build a model based on them.
 
 #### Cross-validated accuracy
 
@@ -236,12 +240,12 @@ The cross-validated accuracy is 0.792003 for the all-variable model.
 
 #### Confusion matrix
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
-
+Similarly, we created a confusion matrix to see the model performance. From the matrix, we can see that the model has an accuracy of 0.7788.
 #### ROC curve and the AUC
 
 ```{r}
@@ -257,12 +261,12 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
-
+Now, we draw a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8479.
 ### Lasso
 
 #### Fit the model
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 set.seed(253)
 lambda_grid <- 10^seq(-4, -2, length = 100)
 log_lasso <- train(
@@ -282,6 +286,7 @@ log_lasso$results %>%
   geom_line() +
   scale_x_log10()
 ```
+Other than a four-var model and an all-var model, we want to fit another model using the Lasso method.
 
 #### Cross-validated accuracy
 
@@ -294,13 +299,13 @@ The cross-validated accuracy is 0.7920030 for the lasso model.
 
 #### Confusion matrix
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 confusionMatrix(data = predict(log_lasso, 
                                type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1")
 ```
-
+As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7788.
 #### ROC curve and the AUC
 
 ```{r}
@@ -316,7 +321,7 @@ db_train %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
-
+After drawing the ROC curve and computed the AUC, we found an AUC of 0.8469 for our Lasso model. 
 # Classification tree
 
 #### Fit the model
@@ -453,6 +458,11 @@ vip(db_randf_model$finalModel, num_features = 8, bar = FALSE)
 ```
 
 # Summary-train
+               |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest       
+---------------|-------------|-------------|-------------|-------------|-------------| 
+Accuracy       |0.784        |0.792        |0.792        |0.000        |0.000         
+AUC            |0.832        |0.848        |0.847        |0.000        |0.000        
+
 
 ## Applying to test data
 

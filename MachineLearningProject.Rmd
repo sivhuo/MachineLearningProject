@@ -493,17 +493,9 @@ We also plot the variable importance plot. It is clear that glucose is the most 
 # Summary-train
                |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest       
 ---------------|-------------|-------------|-------------|-------------|-------------| 
-Accuracy       |0.784        |0.792        |0.792        |0.000        |0.000         
-AUC            |0.832        |0.848        |0.847        |0.000        |0.000        
+Accuracy       |0.784        |0.792        |0.792        |0.7492       |0.7881         
+AUC            |0.832        |0.848        |0.847        |0.8601       |0.8266        
 
-
-```{r}
-summary_train <- matrix(c(0,0,0,0.7492,0.7881,0,0,0, 0.8601,0.8266),ncol=5,byrow=TRUE)
-colnames(summary_train) <- c("4-var","all-var","Lasso", "Classification tree", "Random forest")
-rownames(summary_train) <- c("CV/OOB accuracy","AUC")
-summary_train <- as.table(summary_train)
-summary_train
-```
 
 ## Applying to test data
 

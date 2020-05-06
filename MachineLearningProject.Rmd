@@ -60,7 +60,7 @@ Our dataset is obtained from Kaggle.com. The goal is to predict whether or not t
 db <- read_csv("diabetes.csv")
 ```
 
-We notice that there might be some missing values because it does not make sense to have blood pressure of 0 or BMI or 0. Therefore, we use the mutate function and the median function to change these 0 values into the median value of the predictor variable. The median values are calculated after changing all 0 values to missing. Variables requiring modifications include BMI, BloodPressure, Glucose, Insulin, and SkinThickness, all of which containe values of 0 but should always be higher than 0.
+We notice that there might be some missing values because it does not make sense to have blood pressure of 0 or BMI of 0. Variables requiring modifications include BMI, BloodPressure, Glucose, Insulin, and SkinThickness, all of which containe values of 0 but should always be higher than 0. Therefore, we use the mutate function to first change these 0 values into NA.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db <- db %>%
@@ -73,18 +73,72 @@ db <- db %>%
 summary(db)
 ```
 
+From the summary table above, we can see that there are some NA's in Glucose, BloodPressure, and BMI, but there are hundred of NA's in SkinThickness and Insulin. Therefore, we decide to change NA's to the median value for Glucose, BloodPressure, and BMI, and make SkinThickness and Insulin categorical.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=12}
+db%>% 
+  select_if(is.numeric)%>%
+  pivot_longer(cols = everything(),
+               names_to = "variable", values_to = "value") %>% 
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(vars(variable), scales = "free")
+```
+
+The above are graphs that summarize all the 9 variables. We can see that all the predictor variables are numerical while the outcome variable is categorical, with 0 meaning that the patient does not have diabetes and 1 meaning that the patient has diabetes. Four of the predictor variables, BloodPressure, BMI, Glucose, and SkinThickness, are approximately normally distributed. The other four variables, Age, DiabetesPedigreeFunction, Insulin, and Pregnancies, are right-skewed, showing the most patients in the dataset are young, have few pregnancies, have low insulin level, and are not likely to have diabetes based on their family history.
+
+We plot the relationship between the outcome variable and all predictor variables as well. For most variables, how they affect the outcome is not appreciable. Age, Pregnancies, and Glucose are the three that have slightly more observable influence on the outcome. From the graph, our primary conjecture is that higher Age, Pregnancies, and Glucose are associated with having diabetes.
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=6}
+db_bmi<-db%>%
+  ggplot(aes(y=BMI, x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_preg<-db%>%
+  ggplot(aes(y=Pregnancies,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_glu<-db%>%
+  ggplot(aes(y=Glucose,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_blood<-db%>%
+  ggplot(aes(y=BloodPressure,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_skin<-db%>%
+  ggplot(aes(y=SkinThickness, x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_insu<-db%>%
+  ggplot(aes(y=Insulin,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_dia<-db%>%
+  ggplot(aes(y=DiabetesPedigreeFunction,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+db_age<-db%>%
+  ggplot(aes(y=Age,x=as.factor(Outcome)))+
+  geom_boxplot()
+
+grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin, nrow = 2) 
+```
+
+We fail to find information about how to categorize Insulin or SkinThickness online so that we can only do the categorization based on the distribution of our data. Histograms above show how Insulin and SkinThickness are distributed. For SkinThickness, it is approxiately normally distributed with some outliers around 100 while for Insulin, the shape is right-skewed with a peak around 100. Using these graphs and the summary table above, we build our categories: low insulin from 0 to 50, medium insulin from 50 to 200, and high insulin above 200; thin skin from 0 to 30, medium skin from 30 to 70, and thick skin above 70. All the NA's are categorized as missing.
+
+For Glucose, BloodPressure, and BMI, the median values are calculated after changing all 0 values to missing. Then those NA's are mutated to the median value.
+
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db <- db %>%
   mutate(BMI=ifelse(is.na(BMI), median(db$BMI,na.rm = TRUE), BMI),
          BloodPressure=ifelse(is.na(BloodPressure), median(db$BloodPressure,na.rm = TRUE), BloodPressure),
          Glucose=ifelse(is.na(Glucose), median(db$Glucose,na.rm = TRUE), Glucose),
-         Insulin=ifelse(is.na(Insulin), "Missing", ifelse(Insulin<250, "Low",
-                                                          ifelse(Insulin>=250&Insulin<650, "Medium", "High"))),
+         Insulin=ifelse(is.na(Insulin), "Missing", ifelse(Insulin<50, "Low",
+                                                          ifelse(Insulin>=50&Insulin<200, "Medium", "High"))),
          SkinThickness=ifelse(is.na(SkinThickness), "Missing",
                               ifelse(SkinThickness<30,"Thin",
                                      ifelse(SkinThickness>=30&SkinThickness<70, "Medium", "Thick"))))
-
-db
 ```
 
 We use 70% of the dataset as our training data while 30% as our testing data. The proportion 0.7 is used instead of 0.5 because this dataset, with 768 observations, is not a large dataset and thus a larger proportion is needed to fit an accurate model.
@@ -96,61 +150,11 @@ db_train <- training(db_split)
 db_test <- testing(db_split)
 ```
 
-The following are graphs that summarize all the 9 variables. We can see that all the predictor variables are numerical while the outcome variable is categorical, with 0 meaning that the patient does not have diabetes and 1 meaning that the patient has diabetes. Four of the predictor variables, BloodPressure, BMI, Glucose, Insulin, and SkinThickness, are approximately normally distributed. They are also the ones that have values of 0 and are modified to the median values. The other three variables, Age, DiabetesPedigreeFunction, and Pregnancies, are right-skewed, showing the most patients in the dataset are young, have few pregnancies, and are not likely to have diabetes based on their family history.
-
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=12}
-db_train %>% 
-  select_if(is.numeric)%>%
-  pivot_longer(cols = everything(),
-               names_to = "variable", values_to = "value") %>% 
-  ggplot(aes(x = value)) +
-  geom_histogram() +
-  facet_wrap(vars(variable), scales = "free")
-```
-
-We plot the relationship between the outcome variable and all predictor variables as well. For most variables, it is hard to tell how they affect the outcome. BMI, DiabetesPedigreeFunction, and Glucose are the three that have slightly more observable influence on the outcome. From the graph, our primary conjecture is that higher BMI, DiabetesPedigreeFunction, and Glucose are associated with having diabetes.
-
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=6}
-db_bmi<-db_train%>%
-  ggplot(aes(x=BMI,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_preg<-db_train%>%
-  ggplot(aes(x=Pregnancies,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_glu<-db_train%>%
-  ggplot(aes(x=Glucose,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_blood<-db_train%>%
-  ggplot(aes(x=BloodPressure,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_skin<-db_train%>%
-  ggplot(aes(x=SkinThickness,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_insu<-db_train%>%
-  ggplot(aes(x=Insulin,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_dia<-db_train%>%
-  ggplot(aes(x=DiabetesPedigreeFunction,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-db_age<-db_train%>%
-  ggplot(aes(x=Age,y=Outcome))+
-  geom_point(size = .5, alpha = .5)
-
-grid.arrange(db_age,db_blood, db_bmi, db_dia, db_glu, db_insu, db_preg, db_skin, nrow = 2) 
-```
-
 ## Modeling
 
 ### 4-var
 
-First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose blood pressure, BMI, glucose, and DiabetesPedigreeFunction.
+First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose age, BMI, glucose, and Pregnancies.
 
 #### Fit the model
 
@@ -159,7 +163,7 @@ First of all, we choose four variable out of all the available variables, and us
 set.seed(253)
 # Run the model
 log_four_var <- train(
-    as.factor(Outcome) ~ BloodPressure+BMI+Glucose+DiabetesPedigreeFunction,
+    as.factor(Outcome) ~ Age+BMI+Glucose+Pregnancies,
     data = db_train,
     method = "glm",
     family = "binomial",
@@ -608,7 +612,10 @@ db_test%>%
 
 # Summary-test
 
-![](Summary-test.PNG)
+               |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest
+    -----------|-------------|-------------|-------------|-------------|-------------
+    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7492[1]    |0.7881[5] 
+    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8601[5]    |0.8266[1]  
 
 According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one.
 

@@ -386,26 +386,25 @@ db_tree_model$results
 ```{r}
 db_tree_model$bestTune
 ```
-
-The best tuning paramter is 0.01526418 and the highest accuracy is 0.7492. 
+The best tuning paramter is 0.01526418 and the highest accuracy is 0.7547594.
 
 #### Confusion matrix
 
 ```{r}
-confusionMatrix(data = predict(db_tree_model, type = "raw"), #predictions
+confusionMatrix(data = predict(db_tree_model, type = "raw", newdata = db_train), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
 
-The confusion matrix above shows us that the the sensitivity of this model is 0.7174 and the specificity of it is  0.8870. Since the specificity is higher than the sensitivity, this model has a higher true negative rate than true positive rate. This means that it can predict better when the patients don't have diabetes than when the patients have diabetes. 
+The confusion matrix above shows us that the the sensitivity of this model is 0.7717  and the specificity of it is  0.8701. Since the specificity is higher than the sensitivity, this model has a higher true negative rate than true positive rate. This means that it can predict better when the patients don't have diabetes than when the patients have diabetes. 
 
-The accuracy using the entire training dataset is 0.8290 which is significantly greater than the cross-validated accuracy 0.7492. This could be because the model is overfitted since we use the entire traning data set. 
+The accuracy using the entire training dataset is 0.8364  which is significantly greater than the cross-validated accuracy 0.7547594. This could be because the model is overfitted since we use the entire training data set.     
 
 #### ROC curve and the AUC
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"1") %>%
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob", newdata=db_train)$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
@@ -414,16 +413,16 @@ db_train %>%
 
 ```{r, warning=FALSE, message=FALSE}
 db_train %>% 
-  mutate(PredOutcome =  predict(db_tree_model, type = "prob")$"1") %>%
+  mutate(PredOutcome =  predict(db_tree_model, type = "prob", newdata = db_train)$"1") %>%
   roc(Outcome ~ PredOutcome, data=.) %>% 
   auc()
 ```
 
-We also use ROC and AUC method to evaluate our model. We want our classifier to perform better than chance where the AUC is 0.5. From the graph above, we can see that it is doing a pretty good job since the ROC curve is above the linear line and the area under it is 0.8601 which is greater than 0.5. 
+We also use ROC and AUC method to evaluate our model. We want our classifier to perform better than chance where the AUC is 0.5. From the graph above, we can see that it is doing a pretty good job since the ROC curve is above the linear line and the area under it is 0.8677 which is greater than 0.5. 
 
 #### Plot of tree model 
 
-Below is the plot of our tree model. We notice that Glucose is the most important predictor since it is used for the first split and also appears again at a few more splits as we go down the tree. 
+Below is the plot of our tree model. We notice that Glucose is the most important predictor since it is used for the first split and also a few more splits as we go down the tree. 
 
 ```{r}
 rpart.plot(db_tree_model$finalModel)
@@ -453,7 +452,7 @@ db_randf_model <- train(
 
 #### Plot of mtry vs. accuracy  
 
-Below is the plot of our tuning parmeter "mtry" versus accuracy. We can see that the accuracy is maximized when the tuning parameter is 2. This means the optimal model is obtained when only two predictors are randomly chosen as candidates for each split. If we allow all the predictors to be the candidates, our accuracy is dropped to only 0.76. 
+Below is the plot of our tuning parmeter "mtry" versus accuracy. We can see that the accuracy is maximized when the tuning parameter is 8. This means the optimal model is obtained when all predictors are chosen as candidates for each split. 
 
 ```{r}
 #Examine the results in a plot
@@ -465,11 +464,12 @@ db_randf_model$results %>%
 
 #### OOB accuracy
 
-The results table shows the accuracy for each mtry. The highest accuracy is 0.7881 and the best mtry is 2 (best tune). This oob accuracy is greater than the accuracy from the classification tree model. 
+The results table shows the accuracy for each mtry. The highest accuracy is 0.7843 with the best mtry of 8. 
 
 ```{r}
 db_randf_model$results
 db_randf_model$bestTune
+kable(db_randf_model$results, caption = "An example table caption.")
 ```
 
 #### Confusion matrix
@@ -480,7 +480,7 @@ confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
                 positive = "1") 
 ``` 
 
-According to the confusion matrix and statistic above, we can see that the sensitivity of this model is 0.6087 and the speficity is 0.8616. Similarly to the classification model tree, the specificity rate is higher than the sensitivity rate, thus this model predicts better when the patients don't have diabetes than when they have diabetes. We also notice that the accuracy using the entire data set is 0.7751 which is lower than the oob accuracy 0.7881. 
+According to the confusion matrix and statistic above, we can see that the sensitivity of this model is 0.6141 and the speficity is 0.8446. Similarly to the classification model tree, the specificity rate is higher than the sensitivity rate, thus this model predicts better when the patients don't have diabetes than when they have diabetes. We also notice that the accuracy using the entire data set is 0.7658 which is lower than the oob accuracy 0.7843. 
 
 #### ROC curve and the AUC
 
@@ -500,9 +500,7 @@ db_train %>%
   auc()
 ```
 
-We also use ROC and AUC to evaluate this model. The ROC curve is above linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. 
-
-The AUC from this model is 0.8266 whic is lower than the AUC from the classification model 0.8601. 
+We also use ROC and AUC to evaluate this model. The ROC curve is above the linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. The AUC from this model is 0.8157.  
 
 #### Variable importance plot
 
@@ -510,14 +508,14 @@ The AUC from this model is 0.8266 whic is lower than the AUC from the classifica
 vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 
 ```
 
-We also plot the variable importance plot. It is clear that glucose is the most important predictor. Age, BMI and insulin are also the important predictors after glucose. 
+We also plot the variable importance plot. It is clear that glucose is the most important predictor. Age and BMI are the most important predictors after glucose. 
 
 # Summary-train
 
                |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest
     -----------|-------------|-------------|-------------|-------------|-------------
-    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7492[1]    |0.7881[5] 
-    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8601[5]    |0.8266[1]  
+    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7547[1]    |0.7843[5] 
+    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8677[5]    |0.8157[1]  
 
 Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var is the best choice as it has the second highest AUC and a median accuracy.
 

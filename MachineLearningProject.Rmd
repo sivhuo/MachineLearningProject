@@ -499,7 +499,7 @@ db_train %>%
   auc()
 ```
 
-We also use ROC and AUC to evaluate this model. The ROC curve is above the linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. The AUC from this model is 0.8157.   
+We also use ROC and AUC to evaluate this model. The ROC curve is above the linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. The AUC from this model is 0.8157.    
 
 #### Variable importance plot
 

@@ -469,7 +469,6 @@ The results table shows the accuracy for each mtry. The highest accuracy is 0.78
 ```{r}
 db_randf_model$results
 db_randf_model$bestTune
-kable(db_randf_model$results, caption = "An example table caption.")
 ```
 
 #### Confusion matrix

@@ -186,7 +186,7 @@ summary(log_four_var) %>%
 log_four_var$results$Accuracy
 ```
 
-The cross-validated accuracy is 0.7844 for the four-variable model.
+The cross-validated accuracy is 0.775 for the four-variable model.
 
 #### Confusion matrix
 
@@ -196,7 +196,7 @@ confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 positive = "1") 
 ```
 
-We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7881.
+We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7807.
 
 #### ROC curve and the AUC
 
@@ -214,7 +214,7 @@ db_train %>%
   auc()
 ```
 
-Then, we plotted the ROC curve and computed the AUC for this model, which is 0.8320.
+Then, we plotted the ROC curve and computed the AUC for this model, which is 0.8449.
 
 ### all-var
 
@@ -254,7 +254,7 @@ The cross-validated accuracy is 0.7657 for the all-variable model.
 #### Confusion matrix
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
-confusionMatrix(data = predict(log_all_var, type = "raw"), #predictions
+confusionMatrix(data = predict(log_all_var, type = "raw"，newdata = db_train), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
@@ -265,19 +265,19 @@ Similarly, we created a confusion matrix to see the model performance. From the 
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(log_all_var, type = "prob")$"1") %>%
+  mutate(PredOutcome =  predict(log_all_var, type = "prob"，newdata = db_train)$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
 #d = actual status, m = predicted probability
 db_train %>% 
-  mutate(PredOutcome=  predict(log_all_var, type = "prob")$"1") %>%
+  mutate(PredOutcome=  predict(log_all_var, type = "prob",newdata = db_train)$"1") %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
 
-Now, we draw a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8479.
+Now, we draw a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8524.
 
 ### Lasso
 
@@ -313,36 +313,36 @@ log_lasso$bestTune$lambda
 log_lasso$results
 ```
 
-The cross-validated accuracy is 0.7657 for the lasso model.
+The cross-validated accuracy is 0.7732 for the lasso model.
 
 #### Confusion matrix
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 confusionMatrix(data = predict(log_lasso, 
-                               type = "raw"), #predictions
+                               type = "raw",newdata = db_train), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1")
 ```
 
-As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7788.
+As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7862.
 
 #### ROC curve and the AUC
 
 ```{r}
 db_train %>% 
-  mutate(PredOutcome =  predict(log_lasso, type = "prob")$"1") %>%
+  mutate(PredOutcome =  predict(log_lasso, type = "prob"，newdata = db_train)$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
   geom_roc(labelround = 2, size = 1,
            linealpha = .5, pointalpha = .8) +
   geom_abline(slope = 1, intercept = 0, color = "gray")
 #d = actual status, m = predicted probability
 db_train %>% 
-  mutate(PredOutcome=  predict(log_lasso, type = "prob")$"1") %>%
+  mutate(PredOutcome=  predict(log_lasso, type = "prob"，newdata = db_train)$"1") %>%
   roc(Outcome, PredOutcome) %>% 
   auc()
 ```
 
-After drawing the ROC curve and computed the AUC, we found an AUC of 0.8469 for our Lasso model. 
+After drawing the ROC curve and computed the AUC, we found an AUC of 0.8523 for our Lasso model. 
 
 # Classification tree
 
@@ -499,7 +499,7 @@ db_train %>%
   auc()
 ```
 
-We also use ROC and AUC to evaluate this model. The ROC curve is above the linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. The AUC from this model is 0.8157.  
+We also use ROC and AUC to evaluate this model. The ROC curve is above the linear line indicating that it performs better than chance. As mentioned above, we want the area under the curve to be close to 1 and greater than 0.5. The AUC from this model is 0.8157.   
 
 #### Variable importance plot
 
@@ -513,10 +513,10 @@ We also plot the variable importance plot. It is clear that glucose is the most 
 
                |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest
     -----------|-------------|-------------|-------------|-------------|-------------
-    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7547[1]    |0.7843[5] 
-    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8677[5]    |0.8157[1]  
+    Accuracy   |0.7750[4]    |0.7713[2]    |0.7732[3]    |0.7547[1]    |0.7843[5] 
+    AUC        |0.8449[2]    |0.8524[4]    |0.8523[3]    |0.8677[5]    |0.8157[1]  
 
-Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var is the best choice as it has the second highest AUC and a median accuracy.
+Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var model is the best choice as it has the second highest AUC and a relatively median accuracy.
 
 ## Applying to test data
 

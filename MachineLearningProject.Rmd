@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+ 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 #plotting and exploring
 library(tidyverse) #for plotting and summarizing

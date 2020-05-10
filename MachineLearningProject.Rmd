@@ -50,7 +50,11 @@ theme_set(theme_minimal())
 
 ## Introduction
 
+<<<<<<< HEAD
 Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the diagnostic measurements such as their blood pressure, BMI, and age have affect on the occurence of diabetes. In our data, all patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
+=======
+Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes based on diagnostic measurements such as their blood pressure, BMI, and age. All patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
+>>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ![](Description.PNG)
 
@@ -186,7 +190,11 @@ summary(log_four_var) %>%
 log_four_var$results$Accuracy
 ```
 
+<<<<<<< HEAD
 Then, we calculate the cross-validated accuracy for this four-var model, whichi is 0.775.
+=======
+The cross-validated accuracy is 0.7750 for the four-variable model.
+>>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 #### Confusion matrix
 
@@ -202,7 +210,7 @@ Also, the specificity of 0.8870 is much higher than the sensitivity of 0.5761, w
 
 #### ROC curve and the AUC
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db_train %>% 
   mutate(PredOutcome =  predict(log_four_var, type = "prob")$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
@@ -251,7 +259,11 @@ Now, instad of looking at only four variables, we want to include all the variab
 log_all_var$results$Accuracy
 ```
 
+<<<<<<< HEAD
 First, we compute the cross-validated accuracy which is 0.7657 for this all-variable model.
+=======
+The cross-validated accuracy is 0.7713 for the all-variable model.
+>>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 #### Confusion matrix
 
@@ -266,7 +278,7 @@ Similarly, we created a confusion matrix to see the model performance. From the 
 
 #### ROC curve and the AUC
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db_train %>% 
   mutate(PredOutcome =  predict(log_all_var, type = "prob"，newdata = db_train)$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
@@ -311,7 +323,7 @@ Other than a four-var model and an all-var model, we want to fit another model u
 
 #### Cross-validated accuracy
 
-```{r}
+```{r,include=FALSE}
 log_lasso$bestTune$lambda
 log_lasso$results
 ```
@@ -331,7 +343,7 @@ As same as we did before, we created a consusion matrix for our Lasso model, and
 
 #### ROC curve and the AUC
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
 db_train %>% 
   mutate(PredOutcome =  predict(log_lasso, type = "prob"，newdata = db_train)$"1") %>%
   ggplot(aes(d = Outcome, m = PredOutcome)) + 
@@ -389,7 +401,7 @@ db_tree_model$results
 ```{r}
 db_tree_model$bestTune
 ```
-The best tuning paramter is 0.01526418 and the highest accuracy is 0.7547594.
+The best tuning paramter is 0.01526418 and the highest accuracy is 0.7548.
 
 #### Confusion matrix
 
@@ -401,7 +413,7 @@ confusionMatrix(data = predict(db_tree_model, type = "raw", newdata = db_train),
 
 The confusion matrix above shows us that the the sensitivity of this model is 0.7717  and the specificity of it is  0.8701. Since the specificity is higher than the sensitivity, this model has a higher true negative rate than true positive rate. This means that it can predict better when the patients don't have diabetes than when the patients have diabetes. 
 
-The accuracy using the entire training dataset is 0.8364  which is significantly greater than the cross-validated accuracy 0.7547594. This could be because the model is overfitted since we use the entire training data set.     
+The accuracy using the entire training dataset is 0.8364  which is significantly greater than the cross-validated accuracy 0.7548. This could be because the model is overfitted since we use the entire training data set.     
 
 #### ROC curve and the AUC
 
@@ -506,7 +518,7 @@ We also use ROC and AUC to evaluate this model. The ROC curve is above the linea
 
 #### Variable importance plot
 
-```{r}
+```{r,warning=FALSE}
 vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 
 ```
 
@@ -519,7 +531,7 @@ We also plot the variable importance plot. It is clear that glucose is the most 
     Accuracy   |0.7750[4]    |0.7713[2]    |0.7732[3]    |0.7547[1]    |0.7843[5] 
     AUC        |0.8449[2]    |0.8524[4]    |0.8523[3]    |0.8677[5]    |0.8157[1]  
 
-Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var model is the best choice as it has the second highest AUC and a relatively median accuracy.
+Baed on the summary table above, it is hard to conclude which model is the best. The model with the highest accuracy has the smallest AUC while the one with the highest AUC has the lowest accuracy. Therefore, it is the best to choose the model with the median accuracy and AUC. The all-var model and the Lasso model may be the best two as all their AUCs are higher than 0.85 while the 4-var model's does not.
 
 ## Applying to test data
 
@@ -527,7 +539,7 @@ After we fit all five models using the training data, we are going to examine th
 
 ### 4-var
 
-We get an accuracy of 0.7348 and an AUC of 0.8076 for this model.
+We get an accuracy of 0.7435 and an AUC of 0.8166 for this model.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_four_var, newdata = db_test, type = "raw"),
@@ -544,7 +556,7 @@ db_test%>%
 
 ### all-var
 
-We get an accuracy of 0.7522 and an AUC of 0.8242 for this model. Both values are higher than those of the 4-var model, indicating that this model is a more accurate and better one.
+We get an accuracy of 0.7391 and an AUC of 0.8249 for this model. The accuracy is lower Than the one of 4-var model while the AUC is slightly larger.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_all_var, newdata = db_test, type = "raw"),
@@ -561,7 +573,7 @@ db_test%>%
 
 ### Lasso
 
-We get an accuracy of 0.7478 and an AUC of 0.8217 for this model. Both values are higher than those of the 4-var model but lower than the all-var model, indicating that this model performs better than the 4-var model but not as good as the all-var model.
+We get an accuracy of 0.7304 and an AUC of 0.8249 for this model. The accuracy is the lowest of all while the AUC is the same of the one of the all-var model, larger than of 4-var model.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(log_lasso, newdata = db_test, type = "raw"),
@@ -577,8 +589,13 @@ db_test%>%
 ```
 
 ### Classification tree
+<<<<<<< HEAD
  
 We get an accuracy of 0.7043 and an AUC of 0.7363 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
+=======
+
+We get an accuracy of 0.6957 and an AUC of 0.7519 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
+>>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
@@ -595,7 +612,7 @@ db_test%>%
 
 ### Random forest
 
-We get an accuracy of 0.7304 and an AUC of 0.8190 for this model. It has the second smallest accuracy and the third smallest AUC.
+We get an accuracy of 0.7217 and an AUC of 0.8048 for this model. It has the second smallest AUC and the third smallest accuracy.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(db_randf_model, newdata = db_test, type = "raw"),
@@ -614,11 +631,15 @@ db_test%>%
 
                |4-var        |all-var      |Lasso        |Class. Tree  |Rand. Forest
     -----------|-------------|-------------|-------------|-------------|-------------
-    Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7492[1]    |0.7881[5] 
-    AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8601[5]    |0.8266[1]  
+    Accuracy   |0.7435[5]    |0.7391[4]    |0.7304[2]    |0.6957[1]    |0.7217[3] 
+    AUC        |0.8166[3]    |0.8249[4]    |0.8249[4]    |0.7519[1]    |0.8048[2]  
 
+<<<<<<< HEAD
 According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one. 
+=======
+According to the summary table above, the all-variable model and the 4-var model are our best choices. Both of them are also not computationally too complicated as there are only eight predictor values in total and thus both are feasible.
+>>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ## Conclusion
 
-Both the training summary table and the testing one give to the same choice- the all-var model. As a result, our conclusion is that we should include all variables in the model when examing whether a patient has diabetes or not.
+Considering both the training summary table and the testing one leads to our final choice: the all-var model. As a result, our conclusion is that we should include all variables in the model when examing whether a patient has diabetes or not.

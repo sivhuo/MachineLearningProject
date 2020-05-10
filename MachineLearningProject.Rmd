@@ -50,7 +50,7 @@ theme_set(theme_minimal())
 
 ## Introduction
 
-Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes or not based on diagnostic measurements such as their blood pressure, BMI, and age. All patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
+Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the diagnostic measurements such as their blood pressure, BMI, and age have affect on the occurence of diabetes. In our data, all patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
 
 ![](Description.PNG)
 
@@ -62,7 +62,7 @@ db <- read_csv("diabetes.csv")
 
 We notice that there might be some missing values because it does not make sense to have blood pressure of 0 or BMI of 0. Variables requiring modifications include BMI, BloodPressure, Glucose, Insulin, and SkinThickness, all of which containe values of 0 but should always be higher than 0. Therefore, we use the mutate function to first change these 0 values into NA.
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
+```{r}
 db <- db %>%
   mutate(BMI=ifelse(BMI==0, NA, BMI),
          BloodPressure=ifelse(BloodPressure==0, NA, BloodPressure),
@@ -73,7 +73,7 @@ db <- db %>%
 summary(db)
 ```
 
-From the summary table above, we can see that there are some NA's in Glucose, BloodPressure, and BMI, but there are hundred of NA's in SkinThickness and Insulin. Therefore, we decide to change NA's to the median value for Glucose, BloodPressure, and BMI, and make SkinThickness and Insulin categorical.
+From the summary table above, we can see that there are some NA's in Glucose, BloodPressure, and BMI, but there are hundred of NA's in SkinThickness and Insulin. Therefore, we decide to change NA's to the median value for Glucose, BloodPressure, and BMI, and make SkinThickness and Insulin categorical.In addition, we cannot tell whether a zero pregnancy means no pregnancy experience or a missing value, so we decided to treat all zero pregnancy as no pregnancy experience.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE, fig.width=12, fig.height=12}
 db%>% 
@@ -154,7 +154,7 @@ db_test <- testing(db_split)
 
 ### 4-var
 
-First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decided to choose age, BMI, glucose, and Pregnancies.
+First of all, we choose four variable out of all the available variables, and use them to create a logistic model. We decide to choose age, BMI, glucose, and Pregnancies.
 
 #### Fit the model
 
@@ -186,17 +186,19 @@ summary(log_four_var) %>%
 log_four_var$results$Accuracy
 ```
 
-The cross-validated accuracy is 0.775 for the four-variable model.
+Then, we calculate the cross-validated accuracy for this four-var model, whichi is 0.775.
 
 #### Confusion matrix
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
+```{r}
 confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
 
-We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7807.
+We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7807. Since it is only slightly higher than the cross-validated accuracy, we don't think there is much over-fitting here.
+Also, the specificity of 0.8870 is much higher than the sensitivity of 0.5761, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes.
+
 
 #### ROC curve and the AUC
 
@@ -214,7 +216,7 @@ db_train %>%
   auc()
 ```
 
-Then, we plotted the ROC curve and computed the AUC for this model, which is 0.8449.
+Then, we plot the ROC curve and compute the AUC for this model, which is 0.8449. From the graph above, we can see that the ROC curve is above the liner line and the area under it is 0.8449, which is much higher than the 0.5 standard.
 
 ### all-var
 
@@ -249,17 +251,18 @@ Now, instad of looking at only four variables, we want to include all the variab
 log_all_var$results$Accuracy
 ```
 
-The cross-validated accuracy is 0.7657 for the all-variable model.
+First, we compute the cross-validated accuracy which is 0.7657 for this all-variable model.
 
 #### Confusion matrix
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
+```{r}
 confusionMatrix(data = predict(log_all_var, type = "raw"，newdata = db_train), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1") 
 ```
 
-Similarly, we created a confusion matrix to see the model performance. From the matrix, we can see that the model has an accuracy of 0.7788.
+Similarly, we created a confusion matrix to see the model performance. From the matrix, we can see that the model has an accuracy of 0.7788, which is pretty close to the cross-validated accuracy. Similar to the four-var model, the specificity is much higher than the sensitivity, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes
+
 
 #### ROC curve and the AUC
 
@@ -277,7 +280,7 @@ db_train %>%
   auc()
 ```
 
-Now, we draw a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8524.
+Now, we drew a ROC curve and compute the AUC for this model. The AUC for this all-var model is 0.8524. It is higher than 0.5 and aove the liner line, so we think the model is doing well from the perspective of AUC.
 
 ### Lasso
 
@@ -313,18 +316,18 @@ log_lasso$bestTune$lambda
 log_lasso$results
 ```
 
-The cross-validated accuracy is 0.7732 for the lasso model.
+First of all, we find the best lambda and based on the value of lambda, we find the cross-validated accuracy of 0.7732 for the lasso model.
 
 #### Confusion matrix
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=TRUE}
+```{r}
 confusionMatrix(data = predict(log_lasso, 
                                type = "raw",newdata = db_train), #predictions
                 reference = as.factor(db_train$Outcome), #actuals
                 positive = "1")
 ```
 
-As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7862.
+As same as we did before, we created a consusion matrix for our Lasso model, and got an accuracy of 0.7862. It is very close to our cross-validated accuracy. Also, the specificity is much higher than the sensitivity, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes
 
 #### ROC curve and the AUC
 
@@ -342,7 +345,7 @@ db_train %>%
   auc()
 ```
 
-After drawing the ROC curve and computed the AUC, we found an AUC of 0.8523 for our Lasso model. 
+After drawing the ROC curve and computed the AUC, we found an AUC of 0.8523 for our Lasso model. It shows a great performance since the AUC is higher than our threshold of 0.5.
 
 # Classification tree
 
@@ -432,7 +435,7 @@ rpart.plot(db_tree_model$finalModel)
 
 #### Fit the model
 
-We also fit the model using random forest method. Similarly to the classification tree model, we use "Accuracy" matric to evaluate our model, and use OOB method to compute the accuracy. What is good about random forest method is that we can randomly choose and limit the number of predictors as candidates at each split. In this model, we vary the mtry parameter from 1 to 8 since we have 8 predictors so that we can select an optimal model. 
+We also fit the model using random forest method. Similarly to the classification tree model, we use "Accuracy" matric to evaluate our model, and use OOB method to compute the accuracy. What is good about random forest method is that we can randomly choose and limit the number of predictors as candidates at each split. In this model, we vary the mtry parameter from 1 to 8 since we have 8 predictors so that we can select an optimal model.  
 
 ```{r, warning=FALSE}
 set.seed(327)
@@ -453,7 +456,7 @@ db_randf_model <- train(
 #### Plot of mtry vs. accuracy  
 
 Below is the plot of our tuning parmeter "mtry" versus accuracy. We can see that the accuracy is maximized when the tuning parameter is 8. This means the optimal model is obtained when all predictors are chosen as candidates for each split. 
-
+ 
 ```{r}
 #Examine the results in a plot
 db_randf_model$results %>% 
@@ -482,7 +485,7 @@ confusionMatrix(data = predict(db_randf_model, type = "raw"), #predictions
 According to the confusion matrix and statistic above, we can see that the sensitivity of this model is 0.6141 and the speficity is 0.8446. Similarly to the classification model tree, the specificity rate is higher than the sensitivity rate, thus this model predicts better when the patients don't have diabetes than when they have diabetes. We also notice that the accuracy using the entire data set is 0.7658 which is lower than the oob accuracy 0.7843. 
 
 #### ROC curve and the AUC
-
+ 
 ```{r}
 db_train %>% 
   mutate(PredOutcome =  predict(db_randf_model, type = "prob")$"1") %>%
@@ -507,7 +510,7 @@ We also use ROC and AUC to evaluate this model. The ROC curve is above the linea
 vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 
 ```
 
-We also plot the variable importance plot. It is clear that glucose is the most important predictor. Age and BMI are the most important predictors after glucose. 
+We also plot the variable importance plot. It is clear that glucose is the most important predictor. Age and BMI are the most important predictors after glucose.  
 
 # Summary-train
 
@@ -574,7 +577,7 @@ db_test%>%
 ```
 
 ### Classification tree
-
+ 
 We get an accuracy of 0.7043 and an AUC of 0.7363 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
@@ -614,7 +617,7 @@ db_test%>%
     Accuracy   |0.7844[4]    |0.7657[2]    |0.7657[2]    |0.7492[1]    |0.7881[5] 
     AUC        |0.8320[2]    |0.8479[4]    |0.8469[3]    |0.8601[5]    |0.8266[1]  
 
-According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one.
+According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one. 
 
 ## Conclusion
 

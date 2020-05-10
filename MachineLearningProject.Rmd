@@ -503,7 +503,7 @@ We also use ROC and AUC to evaluate this model. The ROC curve is above the linea
 
 #### Variable importance plot
 
-```{r}
+```{r,warning=FALSE}
 vip(db_randf_model$finalModel, num_features = 8, bar = FALSE) 
 ```
 

@@ -50,11 +50,9 @@ theme_set(theme_minimal())
 
 ## Introduction
 
-<<<<<<< HEAD
 Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the diagnostic measurements such as their blood pressure, BMI, and age have affect on the occurence of diabetes. In our data, all patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
-=======
+
 Our dataset is obtained from Kaggle.com. The goal is to predict whether or not the patients have diabetes based on diagnostic measurements such as their blood pressure, BMI, and age. All patient are females at least 21 years old of Pima Indian heritage. An accurate description of variables is provided in the image below.
->>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ![](Description.PNG)
 
@@ -190,11 +188,7 @@ summary(log_four_var) %>%
 log_four_var$results$Accuracy
 ```
 
-<<<<<<< HEAD
-Then, we calculate the cross-validated accuracy for this four-var model, whichi is 0.775.
-=======
-The cross-validated accuracy is 0.7750 for the four-variable model.
->>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
+Then, we calculate the cross-validated accuracy for this four-var model, whichi is 0.7750.
 
 #### Confusion matrix
 
@@ -205,8 +199,8 @@ confusionMatrix(data = predict(log_four_var, type = "raw"), #predictions
 ```
 
 We then used the confusion matrix to further evaluate the model. From the confusion matrix, we can see that the model accuracy is 0.7807. Since it is only slightly higher than the cross-validated accuracy, we don't think there is much over-fitting here.
-Also, the specificity of 0.8870 is much higher than the sensitivity of 0.5761, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes.
 
+Also, the specificity of 0.8870 is much higher than the sensitivity of 0.5761, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes.
 
 #### ROC curve and the AUC
 
@@ -259,11 +253,7 @@ Now, instad of looking at only four variables, we want to include all the variab
 log_all_var$results$Accuracy
 ```
 
-<<<<<<< HEAD
 First, we compute the cross-validated accuracy which is 0.7657 for this all-variable model.
-=======
-The cross-validated accuracy is 0.7713 for the all-variable model.
->>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 #### Confusion matrix
 
@@ -274,7 +264,6 @@ confusionMatrix(data = predict(log_all_var, type = "raw"，newdata = db_train), 
 ```
 
 Similarly, we created a confusion matrix to see the model performance. From the matrix, we can see that the model has an accuracy of 0.7788, which is pretty close to the cross-validated accuracy. Similar to the four-var model, the specificity is much higher than the sensitivity, which means that this model has a higher true negative rate than true positive rate. It can predict better when the patients don't have diabetes than when the patients have diabetes
-
 
 #### ROC curve and the AUC
 
@@ -547,7 +536,7 @@ confusionMatrix(data = predict(log_four_var, newdata = db_test, type = "raw"),
                 positive = "1") 
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 db_test%>%
   mutate(pred = predict(log_four_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -564,7 +553,7 @@ confusionMatrix(data = predict(log_all_var, newdata = db_test, type = "raw"),
                 positive = "1") 
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 db_test%>%
   mutate(pred = predict(log_all_var,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -581,7 +570,7 @@ confusionMatrix(data = predict(log_lasso, newdata = db_test, type = "raw"),
                 positive = "1") 
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 db_test%>%
   mutate(pred = predict(log_lasso,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -589,13 +578,8 @@ db_test%>%
 ```
 
 ### Classification tree
-<<<<<<< HEAD
- 
-We get an accuracy of 0.7043 and an AUC of 0.7363 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
-=======
 
 We get an accuracy of 0.6957 and an AUC of 0.7519 for this model. Both values are the lowest of all models, indicating that this model is the least accurate and worst one.
->>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
 confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
@@ -603,7 +587,7 @@ confusionMatrix(data = predict(db_tree_model, newdata = db_test, type = "raw"),
                 positive = "1") 
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 db_test%>%
   mutate(pred = predict(db_tree_model,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -620,7 +604,7 @@ confusionMatrix(data = predict(db_randf_model, newdata = db_test, type = "raw"),
                 positive = "1") 
 ```
 
-```{r, echo=FALSE,warning=FALSE,message=FALSE,include=FALSE}
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
 db_test%>%
   mutate(pred = predict(db_randf_model,newdata=db_test,type="prob")$"1")%>%
   roc(as.numeric(db_test$Outcome)~pred,data=.) %>%
@@ -634,11 +618,7 @@ db_test%>%
     Accuracy   |0.7435[5]    |0.7391[4]    |0.7304[2]    |0.6957[1]    |0.7217[3] 
     AUC        |0.8166[3]    |0.8249[4]    |0.8249[4]    |0.7519[1]    |0.8048[2]  
 
-<<<<<<< HEAD
-According to the summary table above, the all-variable model is our best choice. It is also not computationally too complicated as there are eight predictor values only and thus it is feasible one. 
-=======
 According to the summary table above, the all-variable model and the 4-var model are our best choices. Both of them are also not computationally too complicated as there are only eight predictor values in total and thus both are feasible.
->>>>>>> 6acdadd2c9f44453a1a88d54a323376a995714e8
 
 ## Conclusion
 
